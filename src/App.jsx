@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { format, formatDistanceToNow } from "date-fns"
-import { Download, Globe, ImageIcon, ZoomIn } from "lucide-react"
+import { Download, Globe, ImageIcon, Moon, Sun, ZoomIn } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -16,17 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
-
-interface Wallpaper {
-  id: string
-  title: string
-  fullUrl: string
-  imageUrl: string
-  date: string
-  copyright?: string
-  description?: string
-}
+} from "@/components/ui/dialog"
+import { useTheme } from "@/components/theme-provider"
 
 const countries = [
   { value: "ca", label: "Canada" },
@@ -55,11 +46,12 @@ const countries = [
 ]
 
 export default function WallpaperShowcase() {
-  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([])
+  const [wallpapers, setWallpapers] = useState([])
   const [country, setCountry] = useState("ca")
   const [loading, setLoading] = useState(true)
-  const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null)
+  const [selectedWallpaper, setSelectedWallpaper] = useState(null)
   const [openModal, setOpenModal] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   const fetchWallpapers = async () => {
     try {
@@ -77,7 +69,7 @@ export default function WallpaperShowcase() {
     fetchWallpapers()
   }, [country])
 
-  const handleDownload = (imageUrl: string, title: string) => {
+  const handleDownload = (imageUrl, title) => {
     const link = document.createElement("a")
     link.href = imageUrl
     link.download = `${title.replace(/\s+/g, "-").toLowerCase()}.jpg`
@@ -86,26 +78,34 @@ export default function WallpaperShowcase() {
     document.body.removeChild(link)
   }
 
-  const handleViewDetails = (wallpaper: Wallpaper) => {
+  const handleViewDetails = (wallpaper) => {
     setSelectedWallpaper(wallpaper)
     setOpenModal(true)
   }
 
-  const getCountryName = (code: string) => {
+  const getCountryName = (code) => {
     const country = countries.find((c) => c.value === code)
     return country ? country.label : code.toUpperCase()
   }
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <header className="sticky top-0 z-10 backdrop-blur-md bg-white/80 border-b border-slate-200">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      <header className="sticky top-0 z-10 backdrop-blur-md bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <ImageIcon className="h-6 w-6 text-slate-700" />
-            <h1 className="text-2xl font-bold text-slate-800">Bing Wallpapers</h1>
+            <ImageIcon className="h-6 w-6 text-slate-700 dark:text-slate-300" />
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Bing Wallpapers</h1>
           </div>
 
-          <div className="w-full md:w-auto">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+
             <Select value={country} onValueChange={setCountry}>
               <SelectTrigger className="w-full md:w-[220px]">
                 <div className="flex items-center gap-2">
@@ -127,8 +127,10 @@ export default function WallpaperShowcase() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-slate-800">Discover Beautiful Wallpapers</h2>
-          <p className="text-slate-600 mt-2">Weekly Bing wallpapers from {getCountryName(country)}</p>
+          <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Discover Beautiful Wallpapers</h2>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
+            Weekly Bing wallpapers from {getCountryName(country)}
+          </p>
         </div>
 
         {loading ? (
@@ -148,7 +150,7 @@ export default function WallpaperShowcase() {
             {wallpapers.map((wallpaper) => (
               <Card
                 key={wallpaper.id || wallpaper.title}
-                className="overflow-hidden group transition-all duration-300 hover:shadow-lg"
+                className="overflow-hidden group transition-all duration-300 hover:shadow-lg dark:hover:shadow-slate-800/30"
               >
                 <div className="relative h-64 overflow-hidden">
                   <img
@@ -176,8 +178,8 @@ export default function WallpaperShowcase() {
                   </div>
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-medium text-slate-800 line-clamp-1">{wallpaper.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1">
+                  <h3 className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">{wallpaper.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {formatDistanceToNow(new Date(wallpaper.date), { addSuffix: true })}
                   </p>
                 </CardContent>
@@ -200,9 +202,9 @@ export default function WallpaperShowcase() {
 
         {wallpapers.length === 0 && !loading && (
           <div className="text-center py-12">
-            <ImageIcon className="h-12 w-12 mx-auto text-slate-400" />
-            <h3 className="mt-4 text-lg font-medium text-slate-700">No wallpapers found</h3>
-            <p className="mt-1 text-slate-500">Try selecting a different country</p>
+            <ImageIcon className="h-12 w-12 mx-auto text-slate-400 dark:text-slate-600" />
+            <h3 className="mt-4 text-lg font-medium text-slate-700 dark:text-slate-300">No wallpapers found</h3>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">Try selecting a different country</p>
           </div>
         )}
       </main>
@@ -212,7 +214,7 @@ export default function WallpaperShowcase() {
           <DialogHeader>
             <DialogTitle>{selectedWallpaper?.title}</DialogTitle>
             <DialogDescription>
-              {format(new Date(selectedWallpaper?.date || new Date()), "MMMM d, yyyy")}
+              {selectedWallpaper && format(new Date(selectedWallpaper.date || new Date()), "MMMM d, yyyy")}
             </DialogDescription>
           </DialogHeader>
 
@@ -226,7 +228,9 @@ export default function WallpaperShowcase() {
             )}
           </div>
 
-          {selectedWallpaper?.copyright && <p className="text-sm text-slate-500 mt-2">{selectedWallpaper.copyright}</p>}
+          {selectedWallpaper?.copyright && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{selectedWallpaper.copyright}</p>
+          )}
 
           <div className="flex justify-end gap-2 mt-4">
             <DialogClose asChild>
@@ -242,7 +246,7 @@ export default function WallpaperShowcase() {
         </DialogContent>
       </Dialog>
 
-      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
         <div className="container mx-auto px-4">
           <p>Bing Wallpaper Showcase &copy; {new Date().getFullYear()}</p>
         </div>
