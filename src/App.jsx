@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { format, formatDistanceToNow } from "date-fns"
+import moment from "moment"
 import { Download, Globe, ImageIcon, Moon, Sun, ZoomIn } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -180,18 +180,14 @@ export default function WallpaperShowcase() {
                 <CardContent className="p-4">
                   <h3 className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">{wallpaper.title}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    {formatDistanceToNow(new Date(wallpaper.date), { addSuffix: true })}
+                    {moment(wallpaper.date).fromNow()}
                   </p>
                 </CardContent>
                 <CardFooter className="px-4 pb-4 pt-0 flex justify-between">
                   <Button variant="outline" size="sm" onClick={() => handleViewDetails(wallpaper)}>
                     View Details
                   </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleDownload(wallpaper.imageUrl, wallpaper.title)}
-                  >
+                  <Button variant="default" size="sm" onClick={() => handleDownload(wallpaper.imageUrl, wallpaper.title)}>
                     Download
                   </Button>
                 </CardFooter>
@@ -214,7 +210,7 @@ export default function WallpaperShowcase() {
           <DialogHeader>
             <DialogTitle>{selectedWallpaper?.title}</DialogTitle>
             <DialogDescription>
-              {selectedWallpaper && format(new Date(selectedWallpaper.date || new Date()), "MMMM d, yyyy")}
+              {selectedWallpaper && moment(selectedWallpaper.date).format("MMMM D, YYYY")}
             </DialogDescription>
           </DialogHeader>
 
@@ -236,9 +232,7 @@ export default function WallpaperShowcase() {
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-            <Button
-              onClick={() => selectedWallpaper && handleDownload(selectedWallpaper.imageUrl, selectedWallpaper.title)}
-            >
+            <Button onClick={() => selectedWallpaper && handleDownload(selectedWallpaper.imageUrl, selectedWallpaper.title)}>
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
